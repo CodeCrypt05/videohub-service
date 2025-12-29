@@ -137,3 +137,5 @@ dist
 
 # SvelteKit build / generate output
 .svelte-kit
+
+playground-2.mongodb.js
