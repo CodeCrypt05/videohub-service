@@ -24,7 +24,9 @@
     "multer": "^2.0.2"
   },
   "devDependencies": {
-    "eslint": "^9.39.2",
+    "@eslint/js": "^9.39.2",
+    "eslint": "^8.57.1",
+    "globals": "^16.5.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "nodemon": "^3.1.11",
