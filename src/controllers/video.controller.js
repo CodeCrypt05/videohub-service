@@ -11,7 +11,7 @@ import { ApiResponse } from "../utils/apiResponse.js";
 
 const validateVideoOwner = async (videoId, userId) => {
   // 1️. Validate ObjectId
-  if (!mongoose.Types.ObjectId.isValid(videoId)) {
+  if (!isValidObjectId(videoId)) {
     throw new ApiError(400, "Invalid video id");
   }
 
