@@ -1,15 +1,7 @@
-import mongoose, { isValidObjectId } from "mongoose";
 import { Tweet } from "../models/tweet.model.js";
-import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { ApiError } from "../utils/apiError.js";
-
-// validate id
-const isValidId = async (id) => {
-  if (!isValidObjectId(id)) throw new ApiError(400, "Invalid video id");
-  return;
-};
 
 // create new tweet
 const createTweet = asyncHandler(async (req, res) => {
@@ -41,8 +33,6 @@ const getUserTweets = asyncHandler(async (req, res) => {
 const updateTweet = asyncHandler(async (req, res) => {
   const { id, content } = req.body;
 
-  isValidId(id);
-
   if (!id) throw new ApiError(400, "Invalid video id");
   if (!content) throw new ApiError(400, "Content is required");
 
@@ -66,7 +56,6 @@ const updateTweet = asyncHandler(async (req, res) => {
 // delete tweet
 const deleteTweet = asyncHandler(async (req, res) => {
   const { tweetId } = req.params;
-  isValidId(tweetId);
 
   await Tweet.findByIdAndDelete(tweetId);
 

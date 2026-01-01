@@ -9,11 +9,24 @@ import {
 } from "../controllers/video.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
+import { validate } from "../middleware/validate.js";
+import {
+  createVideoSchema,
+  updateVideoSchema,
+  videoIdParamSchema,
+  getAllVideosQuerySchema,
+} from "../validations/video.validation.js";
 
 const router = Router();
 
-router.route("/getAllVideos").get(verifyJWT, getAllVideos);
-router.route("/publishAVideo").post(
+// Apply JWT authentication to all video routes
+router.use(verifyJWT);
+
+// Fetch all videos (authenticated user)
+router.route("/").get(validate(getAllVideosQuerySchema, "query"), getAllVideos);
+
+// Publish a new video (video file + thumbnail)
+router.route("/").post(
   upload.fields([
     {
       name: "video",
@@ -24,22 +37,34 @@ router.route("/publishAVideo").post(
       maxCount: 1,
     },
   ]),
-  verifyJWT,
+  validate(createVideoSchema),
   publishAVideo
 );
-router.route("/:videoId").get(verifyJWT, getVideoById);
-router.route("/:videoId").patch(
+
+// Fetch single video by ID
+router.route("/:id").get(validate(videoIdParamSchema, "params"), getVideoById);
+
+// Update video details / thumbnail
+router.route("/:id").patch(
   upload.fields([
     {
       name: "thumbnail",
       maxCount: 1,
     },
   ]),
-  verifyJWT,
+  validate(updateVideoSchema),
+  validate(videoIdParamSchema, "params"),
   updateVideo
 );
 
-router.route("/:videoId").delete(verifyJWT, deleteVideo);
-router.route("/:videoId/publish").patch(verifyJWT, togglePublishStatus);
+// Delete a video by ID
+router
+  .route("/:id")
+  .delete(validate(videoIdParamSchema, "params"), deleteVideo);
+
+// Toggle publish/unpublish status
+router
+  .route("/:id/status")
+  .patch(validate(videoIdParamSchema, "params"), togglePublishStatus);
 
 export default router;

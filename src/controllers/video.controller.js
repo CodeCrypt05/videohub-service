@@ -1,7 +1,6 @@
-import mongoose, { isValidObjectId } from "mongoose";
+import mongoose from "mongoose";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
-import { User } from "../models/user.model.js";
 import { Video } from "../models/video.model.js";
 import {
   uploadOnCloudinary,
@@ -10,27 +9,21 @@ import {
 import { ApiResponse } from "../utils/apiResponse.js";
 
 const validateVideoOwner = async (videoId, userId) => {
-  // 1️. Validate ObjectId
-  if (!isValidObjectId(videoId)) {
-    throw new ApiError(400, "Invalid video id");
-  }
-
-  // 2. Find video
+  // 1. Find video
   const video = await Video.findById(videoId);
   if (!video) {
     throw new ApiError(404, "Video not found");
   }
 
-  // 3. Ownership check
+  // 2. Ownership check
   if (video.owner.toString() !== userId.toString()) {
     throw new ApiError(403, "You are not allowed to perform this action");
   }
-
   return video;
 };
 
 const getAllVideos = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+  const { page = 1, limit = 10, query, sortBy, sortType } = req.query;
 
   // 1. Filter only published videos
   // 2. search by title query (optional)
@@ -132,8 +125,6 @@ const publishAVideo = asyncHandler(async (req, res) => {
 const getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
 
-  //TODO: get video by id
-
   const video = await Video.aggregate([
     {
       $match: {
@@ -164,7 +155,6 @@ const getVideoById = asyncHandler(async (req, res) => {
 });
 
 const updateVideo = asyncHandler(async (req, res) => {
-  //TODO: update video details like title, description, thumbnail
   // 1. check video id is valid
   // 2. find video
   // 3. Authorization (owner only)
@@ -178,11 +168,13 @@ const updateVideo = asyncHandler(async (req, res) => {
   const updateFields = {};
 
   if (title) updateFields.title = title;
-  if (description) updateFields.description = title;
+  if (description) updateFields.description = description;
 
   if (req.files?.thumbnail?.length > 0) {
     const thumbnailLocalPath = req.files.thumbnail[0].path;
     const thumbnailPath = await uploadOnCloudinary(thumbnailLocalPath);
+    await deleteFromCloudinary(video.thumbnail);
+
     updateFields.thumbnail = thumbnailPath;
   }
 
@@ -190,23 +182,12 @@ const updateVideo = asyncHandler(async (req, res) => {
     throw new ApiError(400, "No valid fields provided to update");
   }
 
-  // await oldImageDeleteFromCloudinary(video.thumbnail);
-
-  const updateVideo = await Video.findByIdAndUpdate(
-    videoId,
-    {
-      $set: updateFields,
-    },
-    {
-      new: true,
-    }
-  );
+  video.set(updateFields);
+  await video.save();
 
   return res
     .status(200)
-    .json(
-      new ApiResponse(200, updateVideo, "video details updated successfully")
-    );
+    .json(new ApiResponse(200, video, "video details updated successfully"));
 });
 
 const deleteVideo = asyncHandler(async (req, res) => {

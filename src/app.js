@@ -32,4 +32,8 @@ app.use("/api/v1/tweet", tweetRouter);
 app.use("/api/v1/subscription", subscriptionRouter);
 app.use("/api/v1/playlist", playlistRouter);
 
+// ❗ error handler must be LAST
+import { errorHandler } from "./middleware/errorHandler.js";
+app.use(errorHandler);
+
 export { app };

@@ -1,22 +1,12 @@
-import mongoose, { isValidObjectId } from "mongoose";
+import mongoose from "mongoose";
 import { Subscription } from "../models/subscription.model.js";
-import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-import { ApiError } from "../utils/apiError.js";
-
-// validate id
-const isValidId = async (id) => {
-  if (!isValidObjectId(id)) throw new ApiError(400, "Invalid video id");
-  return;
-};
 
 // toggle subscription
 const toggleSubscription = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
   const subscriberId = req.user._id;
-
-  isValidId(channelId);
 
   // If subscription exists → unsubscribe (delete)
   // If subscription doesn’t exist → subscribe (create)
@@ -59,8 +49,6 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
 
-  isValidId(channelId);
-
   const channelSubscribers = await Subscription.aggregate([
     {
       $match: {
@@ -102,8 +90,6 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 // controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
   const { subscriberId } = req.params;
-
-  isValidId(subscriberId);
 
   const subscribedTo = await Subscription.aggregate([
     {
