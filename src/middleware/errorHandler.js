@@ -19,6 +19,9 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
+  console.error("🔥 ERROR STACK:", err.stack);
+  console.error("🔥 ERROR MESSAGE:", err.message);
+
   // Fallback (unknown errors)
   return res.status(500).json({
     success: false,
