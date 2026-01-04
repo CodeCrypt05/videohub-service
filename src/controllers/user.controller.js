@@ -24,15 +24,9 @@ const generateAccessAndRefreshToken = async (userId) => {
   }
 };
 
-// register
+// 1. register
 const registerUser = asyncHandler(async (req, res) => {
   const { fullName, email, userName, password } = req.body;
-
-  if (
-    [fullName, email, userName, password].some((field) => field?.trim() === "")
-  ) {
-    throw new ApiError(400, "All fields are required");
-  }
 
   const existedUser = await User.findOne({
     $or: [{ userName }, { email }],
@@ -78,12 +72,9 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, createdUser, "User registered successfully"));
 });
 
-// login
+// 2. Login
 const loginUser = asyncHandler(async (req, res) => {
   const { userName, email, password } = req.body;
-
-  if (!userName && !email)
-    throw new ApiError(400, "Username or email is required to login");
 
   const user = await User.findOne({
     $or: [{ userName }, { email }],
@@ -126,14 +117,12 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
-// logout
+// 3. Logout
 const logoutUser = asyncHandler(async (req, res) => {
-  console.log("Enterd in Logout Controller");
-
   await User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: { accessToken: 1 },
+      $set: { refreshToken: 1 },
     },
     {
       new: true,
@@ -152,7 +141,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
-// refresh access token
+// 4. refresh access token
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incommingRefreshToken =
     req.cookies.refreshToken || req.body.refreshToken;
@@ -177,19 +166,20 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       secure: true,
     };
 
-    const { accessToken, newRefreshToken } =
-      await generateAccessAndRefreshToken(user._id);
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+      user._id
+    );
 
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", newRefreshToken, options)
+      .cookie("refreshToken", refreshToken, options)
       .json(
         new ApiResponse(
           200,
           {
             accessToken,
-            refreshToken: newRefreshToken,
+            refreshToken: refreshToken,
           },
           "Access token refreshed successfully"
         )
@@ -199,7 +189,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-// change/update currunt password
+// 5. change/update currunt password
 const changeCurrentPassword = asyncHandler(async (req, res) => {
   const { curruntPassword, newPassword } = req.body;
 
@@ -216,13 +206,14 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Password changed successfully"));
 });
 
-// get currunt user profile
+// 6. get currunt user profile
 const getCurrentUserProfile = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, req.user, "User profile fetched successfully"));
 });
 
+// 7. update currunt user prrofile
 const updateCurrentUserProfile = asyncHandler(async (req, res) => {
   const { fullName, email } = req.body;
 
@@ -245,6 +236,7 @@ const updateCurrentUserProfile = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "User profile updated successfully"));
 });
 
+// 8. update currunt user avatar
 const updateCurruntUserAvatar = asyncHandler(async (req, res) => {
   const avatarLocalPath = req.file?.path;
 
@@ -256,25 +248,22 @@ const updateCurruntUserAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something went wrong while uploading avatar");
   }
 
+  const user = await User.findById(req.user._id);
+
   await deleteFromCloudinary(user.avatar);
 
-  const user = await User.findByIdAndUpdate(
-    req.user._id,
-    {
-      $set: {
-        avatar: avatar.url,
-      },
-    },
-    {
-      new: true,
-    }
-  ).select("-password -refreshToken");
+  user.avatar = avatar.url;
+  await user.save();
+
+  user.password = undefined;
+  user.refreshToken = undefined;
 
   return res
     .status(200)
     .json(new ApiResponse(200, user, "User avatar updated successfully"));
 });
 
+// 9. update currunt user thumbnail
 const updateCurrentUserCoverImg = asyncHandler(async (req, res) => {
   // get avatar from request files
   // upload to cloudinary
@@ -295,21 +284,22 @@ const updateCurrentUserCoverImg = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something went wrong while uploading cover image");
   }
 
+  const user = await User.findById(req.user._id);
+
   await deleteFromCloudinary(user.coverImage);
 
-  const user = await User.findByIdAndUpdate(
-    req.user?._id,
-    {
-      $set: { coverImage: coverImage.url },
-    },
-    { new: true }
-  ).select("-password -refreshToken");
+  user.coverImage = coverImage.url;
+  await user.save();
+
+  user.password = undefined;
+  user.refreshToken = undefined;
 
   return res
     .status(200)
     .json(new ApiResponse(200, user, "User cover image updated successfully"));
 });
 
+// 10. get user channel profile by name
 const getUserChannelProfile = asyncHandler(async (req, res) => {
   const { username } = req.params;
 
@@ -376,6 +366,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     );
 });
 
+// 11. get watch history of user
 const getWatchHistory = asyncHandler(async (req, res) => {
   const user = await User.aggregate([
     {

@@ -56,6 +56,8 @@ const deleteFromCloudinary = async (url) => {
     const fileName = urlParts[urlParts.length - 1];
     const publicId = fileName.split(".")[0]; // Remove file extension
 
+    // const publicId = extractPublicId(url);
+
     if (!publicId) {
       throw new ApiError(400, "publicId is required");
     }

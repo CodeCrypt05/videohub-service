@@ -28,6 +28,7 @@ import playlistRouter from "./routes/playlist.routes.js";
 import likeRouter from "./routes/like.routes.js";
 import commentRouter from "./routes/comment.routes.js";
 import dashboardRouter from "./routes/dashboard.routes.js";
+import healthcheckRouter from "./routes/healthcheck.route.js";
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/videos", videoRouter);
@@ -37,6 +38,7 @@ app.use("/api/v1/playlist", playlistRouter);
 app.use("/api/v1/like", likeRouter);
 app.use("/api/v1/comment", commentRouter);
 app.use("/api/v1/dashboard", dashboardRouter);
+app.use("/api/v1/healthcheck", healthcheckRouter);
 
 // ❗ error handler must be LAST
 import { errorHandler } from "./middleware/errorHandler.js";
