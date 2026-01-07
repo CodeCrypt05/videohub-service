@@ -20,7 +20,7 @@ import {
   loginUserSchema,
   changeCurrentPasswordSchema,
   updateCurrentUserProfileSchema,
-  getUserChannelProfileSchema,
+  getUserChannelProfileParamsSchema,
 } from "../validations/user.validation.js";
 
 const router = Router();
@@ -77,7 +77,7 @@ router
   .route("/c/:username")
   .get(
     verifyJWT,
-    validate(getUserChannelProfileSchema, "params"),
+    validate(getUserChannelProfileParamsSchema, "params"),
     getUserChannelProfile
   );
 // 11. get watch history of user

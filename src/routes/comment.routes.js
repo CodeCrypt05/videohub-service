@@ -17,7 +17,7 @@ import {
 
 const router = Router();
 
-// Apply JWT authentication to all video routes
+// Apply JWT authentication to all comment routes
 router.use(verifyJWT);
 
 // GET all comments for a video

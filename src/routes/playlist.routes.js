@@ -20,7 +20,7 @@ import {
 
 const router = Router();
 
-// Apply JWT authentication to all video routes
+// Apply JWT authentication to all playlist routes
 router.use(verifyJWT);
 
 // Create new playlist

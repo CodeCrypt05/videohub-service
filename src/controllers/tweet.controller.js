@@ -6,7 +6,6 @@ import { ApiError } from "../utils/apiError.js";
 // create new tweet
 const createTweet = asyncHandler(async (req, res) => {
   const { content } = req.body;
-  if (!content) throw new ApiError(400, "Content is required");
 
   const tweet = await Tweet.create({
     owner: req.user._id,
@@ -23,7 +22,7 @@ const createTweet = asyncHandler(async (req, res) => {
 
 // get user tweets
 const getUserTweets = asyncHandler(async (req, res) => {
-  const tweet = await Tweet.find();
+  const tweet = await Tweet.find().lean();
   return res
     .status(201)
     .json(new ApiResponse(201, tweet, "Tweets fetached successfully"));
@@ -31,10 +30,8 @@ const getUserTweets = asyncHandler(async (req, res) => {
 
 // update tweet
 const updateTweet = asyncHandler(async (req, res) => {
-  const { id, content } = req.body;
-
-  if (!id) throw new ApiError(400, "Invalid video id");
-  if (!content) throw new ApiError(400, "Content is required");
+  const { content } = req.body;
+  const { id } = req.params;
 
   const updatedTweet = await Tweet.findByIdAndUpdate(
     id,

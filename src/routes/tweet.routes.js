@@ -6,12 +6,28 @@ import {
   deleteTweet,
 } from "../controllers/tweet.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
+import { validate } from "../middleware/validate.js";
+import {
+  contentTweetSchema,
+  tweetIdParamsSchema,
+} from "../validations/tweet.validation.js";
 
 const router = Router();
 
-router.route("/create-tweet").post(verifyJWT, createTweet);
-router.route("/get-user-tweets").get(verifyJWT, getUserTweets);
-router.route("/update-tweet").patch(verifyJWT, updateTweet);
-router.route("/delete-tweet/:tweetId").delete(verifyJWT, deleteTweet);
+// Apply JWT authentication to all tweet routes
+router.use(verifyJWT);
+
+router.route("/").post(validate(contentTweetSchema), createTweet);
+router.route("/").get(getUserTweets);
+router
+  .route("/:tweetId")
+  .patch(
+    validate(tweetIdParamsSchema, "params"),
+    validate(contentTweetSchema),
+    updateTweet
+  );
+router
+  .route("/:tweetId")
+  .delete(validate(tweetIdParamsSchema, "params"), deleteTweet);
 
 export default router;

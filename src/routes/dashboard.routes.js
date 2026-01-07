@@ -12,7 +12,7 @@ import {
 
 const router = Router();
 
-// Apply JWT authentication to all video routes
+// Apply JWT authentication to all dashboard routes
 router.use(verifyJWT);
 
 router.get(

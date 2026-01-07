@@ -16,7 +16,7 @@ import {
 
 const router = Router();
 
-// Apply JWT authentication to all video routes
+// Apply JWT authentication to all like routes
 router.use(verifyJWT);
 
 // toogle video like
